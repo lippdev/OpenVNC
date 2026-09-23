@@ -1,6 +1,6 @@
 # Prova de monitor virtual no Windows
 
-Estado: diagnóstico preparado; nenhuma instalação executada. O cliente Mac já tem a rota VNC implementada, mas imagem e entrada ainda precisam ser confirmadas no host.
+Estado: diagnóstico preparado; nenhuma instalação executada. O usuário confirmou imagem, mouse, teclado, fullscreen, barras dinâmicas, troca de Spaces e uso da senha salva no cliente Mac.
 
 ## 1. Coletar o ambiente
 
@@ -15,6 +15,8 @@ O script apenas consulta versão do Windows, GPU, telas, drivers de display, ser
 Ainda não foi executado neste Windows. Caso a política de execução bloqueie o script, registrar a mensagem e revisar a política aplicável; não é necessário desativá-la globalmente.
 
 ## 2. Candidato inicial
+
+Consulta das releases upstream em 2026-09-23: a tag [25.7.23](https://github.com/VirtualDrivers/Virtual-Display-Driver/releases/tag/25.7.23) descreve um aplicativo de controle beta portátil, com drivers de vídeo e áudio que o mantenedor declara assinados. A página informa instalação manual para ARM64. A tag [25.5.2](https://github.com/VirtualDrivers/Virtual-Display-Driver/releases/tag/25.5.2) oferece instalador x64 e arquivos de instalação manual para x64 e ARM64. Nenhum desses artefatos foi baixado, verificado ou selecionado para este host: a escolha aguarda versão/arquitetura do Windows e inventário de drivers. A declaração upstream não substitui a validação da assinatura do artefato. O experimento OpenVNC requer somente vídeo; não instalar o driver de áudio incluído no pacote.
 
 Avaliar [VirtualDrivers/Virtual-Display-Driver](https://github.com/VirtualDrivers/Virtual-Display-Driver). O projeto anuncia monitores virtuais e modos personalizados; o [LICENSE](https://github.com/VirtualDrivers/Virtual-Display-Driver/blob/master/LICENSE) declara MIT. Isso o torna um candidato para a prova, não uma dependência já aprovada para distribuição.
 
