@@ -1,0 +1,4 @@
+module COpenVNCCore {
+    header "include/openvnc_core.h"
+    export *
+}
