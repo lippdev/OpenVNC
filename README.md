@@ -2,7 +2,7 @@
 
 Cliente nativo de macOS para usar um Windows remoto em um monitor virtual adaptado ao Mac, com fullscreen e troca de Spaces pelos gestos do sistema.
 
-Projeto em desenvolvimento inicial. O cliente já integra conexão VNC por WebSocket, controle e fullscreen. A criação automática do monitor virtual ainda não está implementada. A sessão completa com imagem e entrada no Windows ainda precisa de validação no host real.
+Projeto em desenvolvimento inicial. O cliente já integra conexão VNC por WebSocket, controle e fullscreen. A criação automática do monitor virtual ainda não está implementada. Conexão, imagem, mouse, teclado e fullscreen foram confirmados pelo usuário no host Windows existente.
 
 ## Arquitetura
 
@@ -31,7 +31,7 @@ O script compila Rust, liga a biblioteca estática ao cliente Swift e gera um `.
 1. Mantenha Mac e Windows conectados à sua tailnet e autorizados pelas políticas Tailscale.
 2. No app, informe o IP Tailscale do Windows e a porta do **websockify** (normalmente `6080`, não a porta TCP `5900` do VNC).
 3. Digite a senha VNC. Marque “Usar e salvar senha no Chaves” se quiser persistir a credencial após uma conexão bem-sucedida. Senha vazia com essa opção marcada consulta o Chaves; “Esquecer senha salva” remove a credencial do endpoint atual.
-4. Conecte e use a tela cheia. O app tem desconexão/cancelamento, modo de visualização e envio de Ctrl+Alt+Del. Reconexão é manual, pelo mesmo formulário.
+4. Conecte e use a tela cheia. No fullscreen, aproxime o ponteiro da borda superior para revelar os controles ou da borda inferior para revelar as informações; as barras somem ao afastar o ponteiro e aparecem sobre a imagem, sem redimensioná-la. O app tem desconexão/cancelamento, modo de visualização e envio de Ctrl+Alt+Del. Reconexão é manual, pelo mesmo formulário.
 
 Sem TLS, o núcleo aceita somente IPs explícitos nos intervalos Tailscale. Nomes de host exigem WSS nesta versão. Um servidor WSS precisa de certificado válido; a verificação TLS não é desativada. A exceção ATS fica restrita ao conteúdo WebKit para permitir o WS existente sobre o túnel Tailscale. Nenhuma política de tailnet é alterada pelo app.
 

@@ -17,10 +17,36 @@ struct OpenVNCApp: App {
 private final class WindowContext: ObservableObject {
     weak var window: NSWindow?
     @Published var screen: NSScreen?
+    @Published private(set) var isFullscreen = false
+    @Published private(set) var topVisible = false
+    @Published private(set) var bottomVisible = false
+    var topHeight: CGFloat = 48
+    var bottomHeight: CGFloat = 64
+
+    func trackPointer(_ point: NSPoint, in bounds: NSRect) {
+        guard isFullscreen, window?.isKeyWindow == true, bounds.contains(point) else {
+            hideControls()
+            return
+        }
+        let fromTop = bounds.maxY - point.y
+        let fromBottom = point.y - bounds.minY
+        let showTop = fromTop <= (topVisible ? topHeight + 12 : 4)
+        let showBottom = fromBottom <= (bottomVisible ? bottomHeight + 12 : 4)
+        if topVisible != showTop { topVisible = showTop }
+        if bottomVisible != showBottom { bottomVisible = showBottom }
+    }
+
+    func hideControls() {
+        if topVisible { topVisible = false }
+        if bottomVisible { bottomVisible = false }
+    }
 
     func update(_ window: NSWindow?) {
         self.window = window
         self.screen = window?.screen
+        let fullscreen = window?.styleMask.contains(.fullScreen) == true
+        if fullscreen != isFullscreen || window?.isKeyWindow != true { hideControls() }
+        isFullscreen = fullscreen
     }
 }
 
@@ -118,27 +144,71 @@ private struct ConnectionView: View {
 
     private var remoteView: some View {
         VStack(spacing: 0) {
-            HStack {
-                Circle().fill(session.state == .connected ? Color.green : Color.orange)
-                    .frame(width: 8, height: 8)
-                Text(session.state == .connected ? "Conectado" : "Conectando…")
-                if let framebuffer = session.framebuffer {
-                    Text(framebuffer).foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button(session.viewOnly ? "Permitir controle" : "Somente visualizar") {
-                    session.toggleViewOnly()
-                }.disabled(session.state != .connected)
-                Button("Ctrl+Alt+Del") { session.sendCtrlAltDel() }
-                    .disabled(session.state != .connected || session.viewOnly)
-                Button { context.window?.toggleFullScreen(nil) } label: {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
-                }.help("Alternar tela cheia")
-                Button("Desconectar") { session.disconnect() }
+            if !context.isFullscreen {
+                sessionControls
+                Divider()
             }
-            .padding(10)
-            Divider()
             VNCWebView(webView: session.webView)
+            if !context.isFullscreen { sessionFooter }
+        }
+        .overlay(alignment: .top) {
+            if context.isFullscreen {
+                sessionControls
+                    .background(.regularMaterial)
+                    .background(panelMeasurement { context.topHeight = $0 })
+                    .opacity(context.topVisible ? 1 : 0)
+                    .allowsHitTesting(context.topVisible)
+                    .accessibilityHidden(!context.topVisible)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if context.isFullscreen {
+                sessionFooter
+                    .frame(maxWidth: .infinity)
+                    .background(.regularMaterial)
+                    .background(panelMeasurement { context.bottomHeight = $0 })
+                    .opacity(context.bottomVisible ? 1 : 0)
+                    .allowsHitTesting(context.bottomVisible)
+                    .accessibilityHidden(!context.bottomVisible)
+            }
+        }
+        .animation(.easeInOut(duration: 0.18), value: context.topVisible)
+        .animation(.easeInOut(duration: 0.18), value: context.bottomVisible)
+        .onChange(of: session.active) { _ in context.hideControls() }
+    }
+
+    private func panelMeasurement(_ update: @escaping (CGFloat) -> Void) -> some View {
+        GeometryReader { geometry in
+            Color.clear
+                .onAppear { update(geometry.size.height) }
+                .onChange(of: geometry.size.height) { update($0) }
+        }
+    }
+
+    private var sessionControls: some View {
+        HStack {
+            Circle().fill(session.state == .connected ? Color.green : Color.orange)
+                .frame(width: 8, height: 8)
+            Text(session.state == .connected ? "Conectado" : "Conectando…")
+            if let framebuffer = session.framebuffer {
+                Text(framebuffer).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button(session.viewOnly ? "Permitir controle" : "Somente visualizar") {
+                session.toggleViewOnly()
+            }.disabled(session.state != .connected)
+            Button("Ctrl+Alt+Del") { session.sendCtrlAltDel() }
+                .disabled(session.state != .connected || session.viewOnly)
+            Button { context.window?.toggleFullScreen(nil) } label: {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+            }.help("Alternar tela cheia")
+            Button("Desconectar") { session.disconnect() }
+        }
+        .padding(10)
+    }
+
+    private var sessionFooter: some View {
+        VStack(spacing: 0) {
             if let message = session.message {
                 Text(message).font(.caption).padding(6)
             }
@@ -188,6 +258,9 @@ private struct WindowReader: NSViewRepresentable {
     func makeNSView(context: Context) -> ScreenObserverView {
         let view = ScreenObserverView()
         view.onUpdate = { [weak model = self.context] window in model?.update(window) }
+        view.onPointer = { [weak model = self.context] point, bounds in
+            model?.trackPointer(point, in: bounds)
+        }
         return view
     }
 
@@ -196,13 +269,33 @@ private struct WindowReader: NSViewRepresentable {
 
 private final class ScreenObserverView: NSView {
     var onUpdate: ((NSWindow?) -> Void)?
+    var onPointer: ((NSPoint, NSRect) -> Void)?
+    private var mouseMonitor: Any?
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         NotificationCenter.default.removeObserver(self)
+        if let mouseMonitor { NSEvent.removeMonitor(mouseMonitor) }
+        mouseMonitor = nil
         if let window {
+            window.acceptsMouseMovedEvents = true
+            mouseMonitor = NSEvent.addLocalMonitorForEvents(
+                matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged, .otherMouseDragged]
+            ) { [weak self] event in
+                // Observe only; all movement and drag events still reach the VNC view.
+                if let self, event.window === self.window, let content = self.window?.contentView {
+                    var point = content.convert(event.locationInWindow, from: nil)
+                    if content.isFlipped {
+                        point.y = content.bounds.minY + content.bounds.maxY - point.y
+                    }
+                    self.onPointer?(point, content.bounds)
+                }
+                return event
+            }
             window.collectionBehavior.insert(.fullScreenPrimary)
-            for name in [NSWindow.didChangeScreenNotification, NSWindow.didChangeBackingPropertiesNotification] {
+            for name in [NSWindow.didChangeScreenNotification, NSWindow.didChangeBackingPropertiesNotification,
+                         NSWindow.didEnterFullScreenNotification, NSWindow.didExitFullScreenNotification,
+                         NSWindow.didResignKeyNotification] {
                 NotificationCenter.default.addObserver(
                     self, selector: #selector(refresh), name: name, object: window
                 )
@@ -218,5 +311,8 @@ private final class ScreenObserverView: NSView {
         }
     }
 
-    deinit { NotificationCenter.default.removeObserver(self) }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        if let mouseMonitor { NSEvent.removeMonitor(mouseMonitor) }
+    }
 }
