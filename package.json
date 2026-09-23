@@ -1,0 +1,12 @@
+{
+  "name": "openvnc-viewer-build",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Local bundle tooling for the embedded VNC renderer",
+  "dependencies": {
+    "@novnc/novnc": "1.7.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
