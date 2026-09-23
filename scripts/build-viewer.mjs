@@ -13,7 +13,7 @@ await build({
   // (entry has no exports), then wrap in an async function for a local classic
   // script. This avoids file:// module CORS and preserves upstream source.
   format: 'esm',
-  banner: { js: '(async () => {' },
+  banner: { js: 'window.webkit.messageHandlers.session.postMessage({event: "rendererLoading"});\n(async () => {' },
   footer: { js: '})().catch(() => window.webkit.messageHandlers.session.postMessage({event: "rendererFailed"}));' },
   target: 'safari16',
   outfile: `${output}/client.js`,

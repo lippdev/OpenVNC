@@ -12,6 +12,16 @@
 
 ## Validação manual pendente
 
+### Investigação do carregamento local
+
+- Após a correção, o usuário confirmou conexão, imagem, mouse, teclado e fullscreen funcionando. Reconexão com senha salva continua pendente.
+
+- Inspeção da janela via `orca computer`: reproduzido timeout antes de iniciar a conexão com o Windows.
+- A política de navegação comparava objetos URL diretamente. Comparar os caminhos de arquivo normalizados fez a página local e o renderer carregarem; observado na UI o avanço para “Conectando ao servidor VNC…”. Navegações para outros arquivos e URLs de rede continuam bloqueadas.
+- Adicionados diagnósticos distintos para página local, inicialização JavaScript e conexão VNC. Nenhum diagnóstico inclui senha ou conteúdo remoto.
+- `bash scripts/build-macos.sh` passou com acesso ao cache Swift fora do sandbox; `git diff --check` passou. Não foram adicionados nem executados testes automatizados.
+- Após a correção, uma tentativa terminou em “Conexão interrompida”; TLS apareceu marcado na inspeção posterior, embora a configuração informada para a porta 6080 seja WS sem TLS. Autenticação com senha digitada pelo usuário, imagem e controle continuam pendentes.
+
 Abrir o app, informar IP Tailscale, porta websockify e senha VNC. Confirmar imagem e controle; comparar dimensões recebidas com o monitor selecionado no host. Entrar em fullscreen e alternar Spaces pelos gestos configurados no macOS. Verificar perda de foco com teclas/botões pressionados, desconexão, timeout, senha incorreta e reconexão manual. Verificar salvar, recuperar e esquecer a senha no Chaves. Em queda abrupta da rede, o cliente não pode garantir entrega das liberações de entrada ao host.
 
 A implementação de conexão não constitui prova de funcionamento no host: autenticação, imagem, entrada e fluidez permanecem pendentes. Não foi instalado driver nem criado monitor virtual. Compatibilidade com macOS 13, Macs Intel e WSS ainda não foi validada. O diagnóstico PowerShell também precisa ser executado no Windows.
