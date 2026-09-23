@@ -24,4 +24,11 @@
 
 Abrir o app, informar IP Tailscale, porta websockify e senha VNC. Confirmar imagem e controle; comparar dimensões recebidas com o monitor selecionado no host. Entrar em fullscreen e alternar Spaces pelos gestos configurados no macOS. Verificar perda de foco com teclas/botões pressionados, desconexão, timeout, senha incorreta e reconexão manual. Verificar salvar, recuperar e esquecer a senha no Chaves. Em queda abrupta da rede, o cliente não pode garantir entrega das liberações de entrada ao host.
 
-A implementação de conexão não constitui prova de funcionamento no host: autenticação, imagem, entrada e fluidez permanecem pendentes. Não foi instalado driver nem criado monitor virtual. Compatibilidade com macOS 13, Macs Intel e WSS ainda não foi validada. O diagnóstico PowerShell também precisa ser executado no Windows.
+O usuário confirmou autenticação, imagem, mouse, teclado e fullscreen no host existente. Reconexão, persistência da senha e avaliação de fluidez prolongada permanecem pendentes. Não foi instalado driver nem criado monitor virtual. Compatibilidade com macOS 13, Macs Intel e WSS ainda não foi validada. O diagnóstico PowerShell também precisa ser executado no Windows.
+
+## Controles dinâmicos em fullscreen
+
+- Controles superiores e informações inferiores ocultos em fullscreen, revelados independentemente ao mover o ponteiro até os últimos 4 pontos da borda correspondente. Permanecem acessíveis enquanto o ponteiro estiver sobre a barra, com margem de 12 pontos para saída.
+- Barras sobrepostas com animação de opacidade; o WKWebView permanece na mesma posição estrutural e não muda de tamanho ao revelar as barras. Em janela, as barras continuam fixas.
+- Observação local dos eventos de movimento e arraste, sem consumir eventos destinados ao VNC; coordenadas corrigidas para views com eixo vertical invertido. Perda de foco e transições de fullscreen ocultam os controles.
+- `bash scripts/build-macos.sh` e `git diff --check`: passaram. Sem testes automatizados. A interação das novas barras, incluindo convivência com menu/Dock do macOS, ainda precisa de validação manual após reabrir o aplicativo; a sessão ativa do usuário não foi reiniciada.
