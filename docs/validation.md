@@ -32,3 +32,9 @@ O usuário confirmou autenticação, imagem, mouse, teclado e fullscreen no host
 - Barras sobrepostas com animação de opacidade; o WKWebView permanece na mesma posição estrutural e não muda de tamanho ao revelar as barras. Em janela, as barras continuam fixas.
 - Observação local dos eventos de movimento e arraste, sem consumir eventos destinados ao VNC; coordenadas corrigidas para views com eixo vertical invertido. Perda de foco e transições de fullscreen ocultam os controles.
 - `bash scripts/build-macos.sh` e `git diff --check`: passaram. Sem testes automatizados. O usuário confirmou que as barras e a troca de Spaces estão fluindo bem após a atualização.
+
+## Barras e margens pretas
+
+- Barras sobrepostas em fullscreen usam preto opaco e esquema escuro para contraste dos controles. Fundo da página e margens internas do noVNC também usam preto puro.
+- Compilação com `bash scripts/build-macos.sh` e revisão com `git diff --check` concluídas. Sem testes automatizados; aparência da nova versão ainda não validada na sessão do usuário.
+- Investigação do cursor em andamento: ainda sem reprodução ou descrição precisa do sintoma; nenhuma correção de cursor aplicada nesta mudança.
