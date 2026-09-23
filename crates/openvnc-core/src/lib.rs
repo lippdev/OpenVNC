@@ -25,6 +25,55 @@ pub fn valid_host(host: &str) -> bool {
     })
 }
 
+/// Unencrypted WebSockets require an explicit Tailscale address. The caller
+/// must still ensure that Tailscale owns the route and authorizes the peer.
+pub fn validate_endpoint(host: &str, port: u32, tls: bool) -> u32 {
+    if !valid_host(host) {
+        return 1;
+    }
+    if !(1..=65535).contains(&port) {
+        return 2;
+    }
+    if tls {
+        return 0;
+    }
+    let tailnet_ip = match host.parse::<IpAddr>() {
+        Ok(IpAddr::V4(ip)) => {
+            let octets = ip.octets();
+            octets[0] == 100 && (64..=127).contains(&octets[1])
+        }
+        Ok(IpAddr::V6(ip)) => {
+            let segments = ip.segments();
+            segments[..3] == [0xfd7a, 0x115c, 0xa1e0]
+        }
+        Err(_) => false,
+    };
+    if tailnet_ip {
+        0
+    } else {
+        3
+    }
+}
+
+/// # Safety
+/// `bytes` must point to `length` readable bytes for the duration of the call.
+#[no_mangle]
+pub unsafe extern "C" fn openvnc_validate_endpoint(
+    bytes: *const u8,
+    length: usize,
+    port: u32,
+    tls: u32,
+) -> u32 {
+    if bytes.is_null() || length == 0 || length > 253 {
+        return 1;
+    }
+    let bytes = unsafe { std::slice::from_raw_parts(bytes, length) };
+    match std::str::from_utf8(bytes) {
+        Ok(host) => validate_endpoint(host, port, tls != 0),
+        Err(_) => 1,
+    }
+}
+
 /// Requested framebuffer dimensions; the Windows host must negotiate support.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
