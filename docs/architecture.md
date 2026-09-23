@@ -6,7 +6,7 @@ Conectar o Mac ao próprio Windows pela tailnet, solicitar um monitor virtual co
 
 ## Limites dos componentes
 
-O núcleo Rust valida o destino e o pedido de display. A interface Swift chama o núcleo por uma ABI C e apresenta o resultado. Comunicação, autenticação e motor de vídeo serão adicionados atrás desses limites; não colocar lógica de protocolo na View.
+O núcleo Rust valida o destino, a política WS/WSS e o pedido de display. A interface Swift chama o núcleo por uma ABI C. `VNCSessionController` gerencia o ciclo de conexão e credenciais no Chaves, enquanto noVNC executa o protocolo e desenha a imagem em WKWebView. A View não implementa o protocolo. O Rust ainda não contém o transporte VNC; o renderer pode ser substituído após os benchmarks.
 
 O agente Windows será responsável por pareamento, autorização, ciclo de vida do display, restauração da topologia e integração com captura/entrada. O driver não será reimplementado sem primeiro avaliar soluções existentes.
 
@@ -28,4 +28,4 @@ Avaliar primeiro captura VNC do display virtual, pois o usuário já aprovou a e
 4. Vídeo e controle: integração do motor escolhido, coordenadas/DPI e liberação de teclas na desconexão.
 5. Experiência: fullscreen, reconexão, clipboard e restauração do layout.
 
-O primeiro marco não abre conexão, instala driver nem promete streaming. Os seguintes dependem de acesso a um Windows de teste.
+A fundação foi concluída. A rota VNC existente foi integrada para possibilitar a prova no Windows antes da automação de display. Ela não cria monitor nem implementa o pareamento do futuro agente. A validação do driver/captura depende do Windows de teste.

@@ -1,14 +1,17 @@
-# Validação da fundação — 2026-09-23
+# Validação — 2026-09-23
 
 - Ambiente: Mac arm64, Swift 6.4, Cargo 1.98.1.
 - `cargo build --offline`: passou, sem dependências externas.
 - `bash scripts/build-macos.sh`: passou; cliente Swift ligado à biblioteca Rust e bundle `dist/OpenVNC.app` gerado com assinatura ad hoc.
 - `git diff --check`: passou.
-- Não foram executados testes automatizados nem validação visual/interativa.
+- Dependências noVNC 1.7.0 e esbuild 0.28.2 fixadas em lockfile com integridade.
+- Build do renderer e compilação Rust/Swift passaram; bundle inclui fontes/licenças upstream.
+- A ponte do Windows respondeu HTTP com `405 Method Not Allowed` e identificação `WebSockify Python/3.11.16` à consulta HEAD. Isso confirma alcance do serviço, não autenticação VNC nem captura.
+- Não foram executados testes automatizados nem validação visual/interativa. A ferramenta de controle da UI indicada pela skill retornou `zsh: command not found: orca`.
 - A compilação precisou de acesso ao cache de módulos do Swift fora do sandbox de execução do agente.
 
 ## Validação manual pendente
 
-Abrir o app, informar IP/nome Tailscale e preparar a configuração. Conferir a tela reportada, mover a janela entre telas com escalas diferentes e preparar novamente. Entrar em fullscreen e alternar Spaces pelos gestos configurados no macOS. Verificar rejeição de URL, porta embutida e endereço inválido.
+Abrir o app, informar IP Tailscale, porta websockify e senha VNC. Confirmar imagem e controle; comparar dimensões recebidas com o monitor selecionado no host. Entrar em fullscreen e alternar Spaces pelos gestos configurados no macOS. Verificar perda de foco com teclas/botões pressionados, desconexão, timeout, senha incorreta e reconexão manual. Verificar salvar, recuperar e esquecer a senha no Chaves. Em queda abrupta da rede, o cliente não pode garantir entrega das liberações de entrada ao host.
 
-A versão atual não conecta ao Windows; estas verificações não demonstram streaming, autorização, criação de monitor ou compatibilidade com um driver. Isso pertence aos marcos seguintes. Compatibilidade com macOS 13 e Macs Intel ainda não foi validada.
+A implementação de conexão não constitui prova de funcionamento no host: autenticação, imagem, entrada e fluidez permanecem pendentes. Não foi instalado driver nem criado monitor virtual. Compatibilidade com macOS 13, Macs Intel e WSS ainda não foi validada. O diagnóstico PowerShell também precisa ser executado no Windows.

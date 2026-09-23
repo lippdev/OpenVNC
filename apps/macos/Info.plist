@@ -10,5 +10,13 @@
     <key>CFBundleVersion</key><string>1</string>
     <key>LSMinimumSystemVersion</key><string>13.0</string>
     <key>NSHighResolutionCapable</key><true/>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Conectar ao seu computador Windows pela rede local ou Tailscale.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <!-- WS is restricted by the Rust core to explicit tailnet IPs.
+             WSS retains normal system certificate validation. -->
+        <key>NSAllowsArbitraryLoadsInWebContent</key><true/>
+    </dict>
 </dict>
 </plist>
