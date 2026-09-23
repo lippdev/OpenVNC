@@ -66,6 +66,7 @@ function connect(config) {
   }
   config.password = '';
   rfb.scaleViewport = true;
+  rfb.background = '#000';
   rfb.resizeSession = false;
   rfb.showDotCursor = true;
   let dimensions = '';

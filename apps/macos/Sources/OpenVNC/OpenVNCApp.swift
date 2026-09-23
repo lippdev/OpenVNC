@@ -154,7 +154,8 @@ private struct ConnectionView: View {
         .overlay(alignment: .top) {
             if context.isFullscreen {
                 sessionControls
-                    .background(.regularMaterial)
+                    .background(Color.black)
+                    .environment(\.colorScheme, .dark)
                     .background(panelMeasurement { context.topHeight = $0 })
                     .opacity(context.topVisible ? 1 : 0)
                     .allowsHitTesting(context.topVisible)
@@ -165,7 +166,8 @@ private struct ConnectionView: View {
             if context.isFullscreen {
                 sessionFooter
                     .frame(maxWidth: .infinity)
-                    .background(.regularMaterial)
+                    .background(Color.black)
+                    .environment(\.colorScheme, .dark)
                     .background(panelMeasurement { context.bottomHeight = $0 })
                     .opacity(context.bottomVisible ? 1 : 0)
                     .allowsHitTesting(context.bottomVisible)
