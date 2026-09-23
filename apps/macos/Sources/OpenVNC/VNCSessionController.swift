@@ -13,6 +13,8 @@ final class VNCSessionController: NSObject, ObservableObject, WKNavigationDelega
     var active: Bool { state == .connecting || state == .connected }
 
     private var ready = false
+    private var rendererLoading = false
+    private var pageLoaded = false
     private var sessionID: String?
     private var endpoint: VNCEndpoint?
     private var password = ""
@@ -66,14 +68,20 @@ final class VNCSessionController: NSObject, ObservableObject, WKNavigationDelega
         self.remember = remember
         sessionID = UUID().uuidString
         state = .connecting
-        message = nil
+        message = ready ? "Conectando ao servidor VNC…" : "Carregando o visualizador local…"
         framebuffer = nil
         viewOnly = false
         timeout?.cancel()
         timeout = Task { [weak self] in
             do { try await Task.sleep(nanoseconds: 20_000_000_000) } catch { return }
             guard let self, self.state == .connecting else { return }
-            self.fail("O Windows não respondeu a tempo. Confira o Tailscale, a porta e o serviço VNC.")
+            self.fail(self.ready
+                ? "O servidor VNC não concluiu a conexão a tempo. Confira o Tailscale, a porta e o serviço VNC."
+                : self.rendererLoading
+                    ? "O motor VNC não terminou de iniciar. A conexão com o Windows ainda não foi iniciada."
+                    : self.pageLoaded
+                        ? "A página local abriu, mas o JavaScript do visualizador não iniciou. Recompile o aplicativo."
+                        : "A página do visualizador local não carregou. A conexão com o Windows ainda não foi iniciada.")
         }
         if ready { startRenderer() }
     }
@@ -102,6 +110,7 @@ final class VNCSessionController: NSObject, ObservableObject, WKNavigationDelega
 
     private func startRenderer() {
         guard let endpoint, let sessionID, state == .connecting else { return }
+        message = "Conectando ao servidor VNC…"
         webView.callAsyncJavaScript(
             "window.openVNC.connect(config)",
             arguments: ["config": ["id": sessionID, "url": endpoint.url.absoluteString, "password": password]],
@@ -125,6 +134,10 @@ final class VNCSessionController: NSObject, ObservableObject, WKNavigationDelega
 
     fileprivate func receive(_ body: Any) {
         guard let body = body as? [String: Any], let event = body["event"] as? String else { return }
+        if event == "rendererLoading" {
+            rendererLoading = true
+            return
+        }
         if event == "rendererFailed" {
             ready = false
             fail("O motor VNC não pôde ser carregado. Reabra o aplicativo.")
@@ -141,6 +154,7 @@ final class VNCSessionController: NSObject, ObservableObject, WKNavigationDelega
             timeout?.cancel()
             timeout = nil
             state = .connected
+            message = nil
             if remember, !password.isEmpty, let endpoint {
                 do { try CredentialStore.save(password, account: endpoint.credentialAccount) }
                 catch { message = "Conectado, mas não foi possível salvar a senha no Chaves." }
@@ -164,12 +178,21 @@ final class VNCSessionController: NSObject, ObservableObject, WKNavigationDelega
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        decisionHandler(navigationAction.request.url == page ? .allow : .cancel)
+        // WebKit reconstructs an absolute URL; Bundle URLs can retain a base URL.
+        // Compare normalized file locations rather than URL representation.
+        let requested = navigationAction.request.url
+        let isViewer = requested?.isFileURL == true
+            && requested?.standardizedFileURL.path == page?.standardizedFileURL.path
+        decisionHandler(isViewer ? .allow : .cancel)
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         ready = false
         fail("Não foi possível carregar o visualizador local.")
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        pageLoaded = true
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -179,6 +202,8 @@ final class VNCSessionController: NSObject, ObservableObject, WKNavigationDelega
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         ready = false
+        rendererLoading = false
+        pageLoaded = false
         fail("O visualizador foi interrompido. Tente conectar novamente.")
         if let page { webView.loadFileURL(page, allowingReadAccessTo: page.deletingLastPathComponent()) }
     }
