@@ -39,6 +39,10 @@ Endereço e opções ficam nas preferências locais. A senha não entra em URL, 
 
 **O monitor exibido é o selecionado pelo servidor VNC.** Ajustar a imagem ao tamanho da janela não cria monitor nem muda resolução no Windows. As dimensões mostradas na sessão são as do canvas/framebuffer do renderer, não uma medição de fps, bitrate ou latência.
 
+## Próxima etapa: monitor virtual
+
+O [roteiro de investigação no Windows](docs/windows-display-spike.md) inclui um diagnóstico somente de leitura e os critérios para escolher e validar o driver. Nenhum driver é instalado pelo aplicativo atual.
+
 ## Licença
 
 A intenção é distribuir como open source. A licença do código próprio será definida antes da primeira distribuição pública. noVNC 1.7.0 é MPL-2.0; as fontes originais e avisos de seus componentes acompanham o app. esbuild (MIT) é ferramenta de build. Veja [ADR-001](docs/decisions/001-vnc-renderer.md).
