@@ -45,4 +45,4 @@ O [roteiro de investigação no Windows](docs/windows-display-spike.md) inclui u
 
 ## Licença
 
-A intenção é distribuir como open source. A licença do código próprio será definida antes da primeira distribuição pública. noVNC 1.7.0 é MPL-2.0; as fontes originais e avisos de seus componentes acompanham o app. esbuild (MIT) é ferramenta de build. Veja [ADR-001](docs/decisions/001-vnc-renderer.md).
+O código próprio é distribuído sob a [licença MIT](LICENSE). As dependências mantêm suas próprias licenças: noVNC 1.7.0 é MPL-2.0; as fontes originais e avisos de seus componentes acompanham o app. esbuild (MIT) é ferramenta de build. Veja [ADR-001](docs/decisions/001-vnc-renderer.md).
