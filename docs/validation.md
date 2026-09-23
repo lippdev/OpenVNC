@@ -38,3 +38,14 @@ O usuário confirmou autenticação, imagem, mouse, teclado e fullscreen no host
 - Barras sobrepostas em fullscreen usam preto opaco e esquema escuro para contraste dos controles. Fundo da página e margens internas do noVNC também usam preto puro.
 - Compilação com `bash scripts/build-macos.sh` e revisão com `git diff --check` concluídas. Sem testes automatizados; aparência da nova versão ainda não validada na sessão do usuário.
 - Investigação do cursor em andamento: ainda sem reprodução ou descrição precisa do sintoma; nenhuma correção de cursor aplicada nesta mudança.
+
+## Primeiro OpenVNC Host
+
+- O usuário informou posteriormente que o problema do cursor estava resolvido; não foi aplicada correção específica de cursor.
+- Implementado Host portátil x64 em Rust/Win32: coleta local, preview JSON, avisos de coleta parcial e abertura da pasta para exportação.
+- `cargo check --locked --offline -p openvnc-host --target x86_64-pc-windows-msvc`: passou no Mac, verificando o código específico de Windows.
+- `cargo build --locked --offline`: núcleo existente compilou no Mac.
+- Build release Windows com CRT estático passou no [GitHub Actions, execução 35920253481](https://github.com/lippdev/OpenVNC/actions/runs/35920253481), commit `fac2605`. O pacote contém `.exe`, README, licenças e SHA-256.
+- `git diff --check`: passou. Nenhum teste automatizado foi adicionado ou executado; o workflow apenas compila e empacota.
+- Abertura da janela, coleta na sessão interativa do usuário, política PowerShell do host e exportação ainda precisam ser validadas no Windows alvo. O runner não executou o aplicativo nem coletou inventário.
+- Sem Authenticode, instalador, serviço, pareamento, listener de rede ou driver nesta entrega. O relatório não é enviado automaticamente. O Host informa falha quando o PowerShell bloqueia a execução e não altera essa política.

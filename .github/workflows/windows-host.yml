@@ -1,0 +1,29 @@
+name: Windows Host build
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop, 'feature/windows-host']
+    paths:
+      - 'apps/windows-host/**'
+      - 'scripts/windows/**'
+      - 'scripts/build-windows-host.ps1'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/windows-host.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Windows executable
+        shell: pwsh
+        run: ./scripts/build-windows-host.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OpenVNC-Host-windows-x64
+          path: dist/OpenVNC-Host-windows-x64/
+          if-no-files-found: error
+          retention-days: 30

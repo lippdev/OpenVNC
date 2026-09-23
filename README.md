@@ -9,7 +9,7 @@ Projeto em desenvolvimento inicial. O cliente já integra conexão VNC por WebSo
 - **SwiftUI + AppKit:** interface e integração com o Mac.
 - **Rust:** núcleo compartilhado, acessível por uma interface C pequena.
 - **noVNC em WKWebView:** renderer local e protocolo VNC, empacotados no app.
-- **Windows:** futuro agente para autorização e gestão de display; driver existente a selecionar.
+- **Windows:** Host portátil em Rust/Win32 para diagnóstico local. Pareamento e gestão de display são próximos marcos; driver existente a selecionar.
 - **Tailscale:** conectividade inicial, configurada pelo usuário. Sem serviço de nuvem próprio.
 
 Veja [a arquitetura e o plano inicial](docs/architecture.md) e [as regras de contribuição](CONTRIBUTING.md).
@@ -40,6 +40,12 @@ Endereço e opções ficam nas preferências locais. A senha não entra em URL, 
 **O monitor exibido é o selecionado pelo servidor VNC.** Ajustar a imagem ao tamanho da janela não cria monitor nem muda resolução no Windows. As dimensões mostradas na sessão são as do canvas/framebuffer do renderer, não uma medição de fps, bitrate ou latência.
 
 ## Próxima etapa: monitor virtual
+
+O [OpenVNC Host para Windows](apps/windows-host/README.md) tem uma primeira versão
+portátil de diagnóstico. Ele coleta Windows, GPU, telas, drivers e serviços VNC
+e salva um JSON para análise. Os pacotes de desenvolvimento são gerados pelo
+[workflow Windows Host build](https://github.com/lippdev/OpenVNC/actions/workflows/windows-host.yml).
+Não há instalador permanente, pareamento ou gestão de monitor nesta versão.
 
 O [roteiro de investigação no Windows](docs/windows-display-spike.md) inclui um diagnóstico somente de leitura e os critérios para escolher e validar o driver. Nenhum driver é instalado pelo aplicativo atual.
 

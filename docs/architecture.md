@@ -10,6 +10,15 @@ O núcleo Rust valida o destino, a política WS/WSS e o pedido de display. A int
 
 O agente Windows será responsável por pareamento, autorização, ciclo de vida do display, restauração da topologia e integração com captura/entrada. O driver não será reimplementado sem primeiro avaliar soluções existentes.
 
+O primeiro incremento do Host está em `apps/windows-host`: executável Rust com
+janela Win32 via `windows-sys`, sem serviço nem endpoint de rede. Incorpora o coletor
+PowerShell existente e o executa na sessão interativa, em processo separado, com
+limite de 60 segundos. A interface recebe o resultado por canal entre threads e
+mostra avisos de inventário parcial. Relatórios ficam em `%LOCALAPPDATA%/OpenVNC/Reports`.
+Essa fronteira permite substituir o coletor por APIs nativas sem mudar a interface.
+O núcleo de sessão continuará compartilhado; este incremento ainda não usa seu
+contrato de display nem implementa identidade, pareamento ou transporte de comandos.
+
 ## Display
 
 Capturar as informações da tela em que a janela está localizada. Distinguir pontos do AppKit, pixels do framebuffer e resolução física do painel: os modos escalados do macOS podem produzir valores diferentes. O pedido inicial usa o framebuffer da tela, acompanhado da escala; o host deverá negociar os modos realmente disponíveis. Escala do macOS não garante que o Windows consiga aplicar DPI equivalente por monitor.

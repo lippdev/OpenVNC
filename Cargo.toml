@@ -1,3 +1,4 @@
 [workspace]
-members = ["crates/openvnc-core"]
+members = ["crates/openvnc-core", "apps/windows-host"]
+default-members = ["crates/openvnc-core"]
 resolver = "2"
