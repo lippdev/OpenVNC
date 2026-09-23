@@ -1,0 +1,3 @@
+[workspace]
+members = ["crates/openvnc-core"]
+resolver = "2"
